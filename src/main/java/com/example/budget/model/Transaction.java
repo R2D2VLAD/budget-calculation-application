@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class Transaction {
     private Category category;
-    private int sum;
+    private Integer sum;
     private String comment;
-}
+    }

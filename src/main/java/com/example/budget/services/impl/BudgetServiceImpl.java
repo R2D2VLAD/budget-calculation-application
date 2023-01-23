@@ -34,17 +34,54 @@ public class BudgetServiceImpl implements BudgetService {
     public int getBalance() {
         return SALARY - SAVING - getAllSpend();
     }
-
-    public void addTransaction(Transaction transaction) {
+    @Override
+    public long addTransaction(Transaction transaction) {
         Map<Long, Transaction> monthTransactions = transactions.getOrDefault(LocalDate.now().getMonth(), new LinkedHashMap<>());
-        monthTransactions.put(lastId++, transaction);
+        monthTransactions.put(lastId, transaction);
+        transactions.put(LocalDate.now().getMonth(), monthTransactions);
+        return lastId++;
+    }
+    @Override
+    public Transaction getTransaction(long id) {
+        for (Map<Long, Transaction> transactionsByMonth : transactions.values()) {
+            Transaction transaction = transactionsByMonth.get(id);
+            if (transaction != null) {
+                return transaction;
+            }
+        }
+        return null;
+    }
+    @Override
+    public Transaction editTransaction(long id, Transaction transaction) {
+        for (Map<Long, Transaction> transactionsByMonth : transactions.values()) {
+            if (transactionsByMonth.containsKey(id)) {
+                transactionsByMonth.put(id, transaction);
+                return transaction;
+            }
+        }
+        return null;
+    }
+    @Override
+    public boolean deleteTransaction(long id) {
+        for (Map<Long, Transaction> transactionsByMonth : transactions.values()) {
+            if (transactionsByMonth.containsKey(id)) {
+                transactionsByMonth.remove(id);
+                return true;
+            }
+        }
+        return false;
+    }
+    @Override
+    public void deleteAllTransaction() {
+        transactions = new TreeMap<>();
     }
 
+    @Override
     public int getDayliBalance() {
         return DAYLI_BUDGET * LocalDate.now().getDayOfMonth() - getAllSpend();
     }
-
-    private int getAllSpend() {
+    @Override
+    public int getAllSpend() {
         Map<Long, Transaction> monthTransactions = transactions.getOrDefault(LocalDate.now().getMonth(), new LinkedHashMap<>());
         int sum = 0;
         for (Transaction transaction : monthTransactions.values()) {
